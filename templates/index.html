@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Team Stats</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .fade-in {
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans leading-normal tracking-normal">
+    <div class="container mx-auto p-4">
+        <h1 class="text-4xl font-bold text-center mb-8">Valorant Team Stats</h1>
+
+        <form id="playerForm" class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-2">Team 1 Player IDs</h2>
+                    <input type="text" id="team1Player1" placeholder="Player 1 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team1Player1')">
+                    <input type="text" id="team1Player2" placeholder="Player 2 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team1Player2')">
+                    <input type="text" id="team1Player3" placeholder="Player 3 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team1Player3')">
+                    <input type="text" id="team1Player4" placeholder="Player 4 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team1Player4')">
+                    <input type="text" id="team1Player5" placeholder="Player 5 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team1Player5')">
+                </div>
+                <div>
+                    <h2 class="text-2xl font-semibold mb-2">Team 2 Player IDs</h2>
+                    <input type="text" id="team2Player1" placeholder="Player 1 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team2Player1')">
+                    <input type="text" id="team2Player2" placeholder="Player 2 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team2Player2')">
+                    <input type="text" id="team2Player3" placeholder="Player 3 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team2Player3')">
+                    <input type="text" id="team2Player4" placeholder="Player 4 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team2Player4')">
+                    <input type="text" id="team2Player5" placeholder="Player 5 ID" class="w-full p-2 mb-2 bg-gray-800 text-white rounded" onblur="fetchPlayerStats('team2Player5')">
+                </div>
+            </div>
+            <button type="button" onclick="calculateResults()" class="w-full bg-blue-600 p-3 mt-4 rounded-lg font-bold hover:bg-blue-500 transition duration-300">Calculate Results</button>
+        </form>
+
+        <div id="results" class="fade-in">
+            <h2 class="text-3xl font-semibold text-center mb-4">Team Stats</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="team1Stats" class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-2">Team 1</h3>
+                    <!-- Team 1 stats will be displayed here -->
+                </div>
+                <div id="team2Stats" class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-2">Team 2</h3>
+                    <!-- Team 2 stats will be displayed here -->
+                </div>
+            </div>
+            <div id="prediction" class="text-center mt-8 text-xl">
+                <!-- Prediction will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchPlayerStats(inputId) {
+            const playerId = document.getElementById(inputId).value;
+            if (!playerId) return;
+
+            const response = await fetch('/fetch-player-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ playerId, team: inputId.includes('team1') ? 'team1' : 'team2' })
+            });
+
+            const data = await response.json();
+
+            // Optionally, you can display individual player stats here
+            console.log(data);
+        }
+
+        async function calculateResults() {
+            const response = await fetch('/calculate-results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            displayStats(data);
+        }
+
+        function displayStats(data) {
+            const { team1Stats, team2Stats, prediction } = data;
+
+            document.getElementById('team1Stats').innerHTML = `
+                <ul>
+                    ${Object.keys(team1Stats).map(key => `<li>${key}: ${team1Stats[key]}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('team2Stats').innerHTML = `
+                <ul>
+                    ${Object.keys(team2Stats).map(key => `<li>${key}: ${team2Stats[key]}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('prediction').innerHTML = `<p>${prediction}</p>`;
+        }
+    </script>
+</body>
+</html>
